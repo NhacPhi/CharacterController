@@ -54,13 +54,7 @@ public class ControlerPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.F))
-        {
-            if (isCam)
-                OnEnable();
-            else
-                OnDisable();
-        }
+
         Vertical = Input.GetAxis("Vertical");
 
         Horizontal = Input.GetAxis("Horizontal");
@@ -157,5 +151,35 @@ public class ControlerPlayer : MonoBehaviour
         thirPersonCam.Priority = 11;
         freeVirtualCam.Priority = 10;
         isCam = true;
+    }
+
+    // Detect Collision
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        
+        if(hit.gameObject.tag == "Machine")
+        {
+            if(!isCam)
+            {
+                OnEnable();
+                isCam = true;
+            }
+                
+            Debug.Log("Object : " + hit.gameObject.tag);
+            if(Move.sqrMagnitude == 0)
+                m_animator.SetBool("IsRepair", true);
+            else
+                m_animator.SetBool("IsRepair", false);
+        }
+        else
+        {
+            m_animator.SetBool("IsRepair", false);
+            if (isCam)
+            {
+                OnDisable();
+                isCam = false;
+            }
+                
+        }    
     }
 }
