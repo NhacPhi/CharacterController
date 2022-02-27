@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Cinemachine;
 public class ControlerPlayer : MonoBehaviour
 {
     Animator m_animator;
@@ -25,7 +25,10 @@ public class ControlerPlayer : MonoBehaviour
     public float MouseSentitivity = 120;
     float m_HorizontalAngle;
 
-
+    // Handle Camera
+    [SerializeField] CinemachineVirtualCamera thirPersonCam;
+    [SerializeField] CinemachineFreeLook freeVirtualCam;
+    bool isCam = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,12 +43,24 @@ public class ControlerPlayer : MonoBehaviour
         isGrounded = true;
 
         m_HorizontalAngle = transform.localEulerAngles.y;
+
+        // Cam
+        thirPersonCam.Priority = 11;
+        freeVirtualCam.Priority = 10;
+
+        
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if(Input.GetKeyDown(KeyCode.F))
+        {
+            if (isCam)
+                OnEnable();
+            else
+                OnDisable();
+        }
         Vertical = Input.GetAxis("Vertical");
 
         Horizontal = Input.GetAxis("Horizontal");
@@ -129,5 +144,18 @@ public class ControlerPlayer : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         VelocityVetical = jumpVelocity;
+    }
+
+    private void OnEnable()
+    {
+        thirPersonCam.Priority = 10;
+        freeVirtualCam.Priority = 11;
+        isCam = false;
+    }
+    private void OnDisable()
+    {
+        thirPersonCam.Priority = 11;
+        freeVirtualCam.Priority = 10;
+        isCam = true;
     }
 }
