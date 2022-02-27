@@ -9,7 +9,7 @@ public class ControlerPlayer : MonoBehaviour
 
     public GameObject m_CharacterRoot;
     private Transform transformCharacterRoot;
-
+    // Movement
     float Vertical = 0;
     float Horizontal = 0;
     bool isGrounded;
@@ -17,7 +17,8 @@ public class ControlerPlayer : MonoBehaviour
     public float walkSpeed = 1.5f;
     public float runSpeed = 3f;
     Vector3 Move;
-
+    public float jumpSpeed = 2f;
+    public float jumpVelocity = 5f;
     float VelocityVetical = 0;
 
     // Handle Camera
@@ -44,12 +45,9 @@ public class ControlerPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //transformCharacterRoot.position = Vector3.zero;
+
         Vertical = Input.GetAxis("Vertical");
-        if (Vertical < 0)
-        {
-            Vertical = 0;
-        }
+
         Horizontal = Input.GetAxis("Horizontal");
 
         m_animator.SetFloat("VelocityY", Vertical);
@@ -57,36 +55,55 @@ public class ControlerPlayer : MonoBehaviour
         m_animator.SetFloat("VelocityX", Horizontal);
 
         isGrounded = m_character.isGrounded;
-        //Debug.Log("Shift :" + isGrounded);
+        Move = Vector3.zero;
+        Move = new Vector3(Horizontal, 0, Vertical);
         if (isGrounded)
         {
-           Move = Vector3.zero;
-            Move = new Vector3(Horizontal, 0, Vertical);
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                m_animator.SetTrigger("Jump");
+                StartCoroutine(StartJump());
+            }
 
             if (Move.sqrMagnitude > 0)
             {
                 Move.Normalize();
 
-                if (Input.GetKey(KeyCode.LeftShift) && Vertical != 0)
+                if (Input.GetKey(KeyCode.LeftShift) /*&& Vertical != 0*/)
                 {
-                    //Debug.Log("Shift");
+
                     Move = Move * Time.deltaTime * runSpeed;
-                    //m_animator.SetBool("IsRun", true);
-                    m_animator.SetFloat("VelocityY", Vertical * 2);
+
+                    if (Vertical != 0)
+                        m_animator.SetFloat("VelocityY", Vertical * 2);
+                    if (Horizontal != 0)
+                        m_animator.SetFloat("VelocityX", Horizontal * 2);
                 }
                 else
                 {
                     Move = Move * Time.deltaTime * walkSpeed;
-                    //m_animator.SetBool("IsRun", false);
                 }
 
                 Move = transform.TransformDirection(Move);
 
                 m_character.Move(Move);
             }
-            
-        }
 
+        }
+        else
+        {
+            // Jump movement
+            if (Move.sqrMagnitude > 0)
+            {
+                Move.Normalize();
+
+                Move = Move * Time.deltaTime * jumpSpeed;
+
+                Move = transform.TransformDirection(Move);
+
+                m_character.Move(Move);
+            }
+        }
         // handle gravity
         VelocityVetical = VelocityVetical - 9.8f * Time.deltaTime;
         if (VelocityVetical < -9.8f)
@@ -107,5 +124,10 @@ public class ControlerPlayer : MonoBehaviour
         // Reset 
         m_CharacterRoot.gameObject.transform.localPosition = Vector3.zero;
         m_CharacterRoot.gameObject.transform.localEulerAngles = Vector3.zero;
+    }
+    IEnumerator StartJump()
+    {
+        yield return new WaitForSeconds(0.5f);
+        VelocityVetical = jumpVelocity;
     }
 }
